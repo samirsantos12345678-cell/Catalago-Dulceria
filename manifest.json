@@ -1,6 +1,6 @@
 {
-  "name": "Mi Negocio · Catálogo de ventas",
-  "short_name": "Catálogo",
+  "name": "Dulceria Lobo · Catálogo de ventas",
+  "short_name": "Dulceria Lobo",
   "description": "Catálogo de productos con carrito y pedidos por WhatsApp.",
   "lang": "es",
   "start_url": "./",
