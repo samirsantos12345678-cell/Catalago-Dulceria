@@ -2,6 +2,8 @@
 
 Catálogo web para que un vendedor muestre productos con fotos desde su teléfono, arme un pedido y lo envíe por WhatsApp a la bodega. Funciona sin servidor propio y se puede instalar como app (PWA). Opcionalmente usa **Supabase** (gratis) para que los productos creados por el administrador aparezcan en todos los teléfonos.
 
+Cada producto puede venderse por **unidad, media docena, docena o caja**, con un precio distinto para cada presentación.
+
 ---
 
 ## 1. Inicio rápido en Windows
@@ -61,9 +63,10 @@ Puedes hacerlo de dos formas: desde la app o editando el archivo.
 
 1. Abre la pestaña **Productos** (en el teléfono es el icono de caja).
 2. Pulsa **Nuevo producto**.
-3. Completa nombre, categoría, precio y unidad.
-4. Pulsa **Tomar o elegir foto** para usar la cámara o la galería. La app reduce la foto automáticamente para que no ocupe demasiado.
-5. Pulsa **Guardar producto**.
+3. Completa nombre y categoría. En **Se vende por** elige la presentación principal (unidad, media docena, docena o caja) y escribe su precio.
+4. Si también vendes el producto en otras presentaciones, escribe sus precios en la misma sección. Las que dejes vacías no aparecen en el catálogo.
+5. Pulsa **Tomar o elegir foto** para usar la cámara o la galería. La app reduce la foto automáticamente para que no ocupe demasiado.
+6. Pulsa **Guardar producto**.
 
 Cada producto tiene botones para **editar** y **eliminar**. Si configuraste la nube, la app pide entrar como administrador y los cambios se comparten con todos los teléfonos. Sin nube, se guardan solo en el navegador de ese teléfono.
 
@@ -86,7 +89,8 @@ Edita `js/productos.js`. Cada producto es una línea:
   nombre: 'Chocolate en barra 100 g',
   categoria: 'Chocolates y bombones',
   precio: 6.90,
-  unidad: 'tableta',
+  unidad: 'unidad',
+  precios: { unidad: 6.90, 'media-docena': 38.00, docena: 72.00, caja: 260.00 },
   imagen: '',
   destacado: true
 }
@@ -94,16 +98,23 @@ Edita `js/productos.js`. Cada producto es una línea:
 
 - `id`: debe ser único. No lo repitas.
 - `categoria`: si escribes una categoría nueva, aparece automáticamente en los filtros.
-- `precio`: solo número, sin símbolo de moneda.
-- `unidad`: bolsa, botella, caja, unidad, etc.
+- `precio`: solo número, sin símbolo de moneda. Es el precio de la presentación principal.
+- `unidad`: presentación principal. Solo estos valores: `unidad`, `media-docena`, `docena` o `caja`.
+- `precios`: opcional. Precio de cada presentación que vendes. Si falta una, esa presentación no se ofrece. Debe incluir el precio de la presentación principal.
 - `destacado`: `true` para que aparezca primero.
 - `activo`: pon `false` para ocultar un producto sin borrarlo.
 - `descripcion`: opcional. Si no la pones, la app usa una descripción por categoría.
 
+Si un producto solo se vende de una forma, puedes omitir `precios`:
+
+```js
+{ id: 'P002', nombre: 'Paleta de coco', categoria: 'Paletas', precio: 5.00, unidad: 'unidad' }
+```
+
 Para ocultar un producto:
 
 ```js
-{ id: 'P001', nombre: 'Chocolate en barra 100 g', categoria: 'Chocolates y bombones', precio: 6.90, unidad: 'tableta', imagen: '', activo: false }
+{ id: 'P001', nombre: 'Chocolate en barra 100 g', categoria: 'Chocolates y bombones', precio: 6.90, unidad: 'unidad', imagen: '', activo: false }
 ```
 
 ---
@@ -125,6 +136,15 @@ Esta es la forma de que el administrador cree o cambie un producto desde su tel�
 3. Copia todo el contenido del archivo `supabase/schema.sql` y pégalo.
 4. Pulsa **Run**.
 5. Debe aparecer "Success". Eso crea la tabla `productos` y las reglas de seguridad: todos pueden leer, pero solo un administrador con sesión puede crear, editar o borrar.
+
+> **¿Ya tenías la tabla creada?** El archivo `supabase/schema.sql` incluye al final la línea que agrega la columna de precios por presentación. Ejecuta solo esto en **SQL Editor** y pulsa **Run**:
+>
+> ```sql
+> alter table public.productos
+>   add column if not exists precios jsonb not null default '{}'::jsonb;
+> ```
+>
+> Sin esa columna la app sigue guardando los productos, pero los precios de las presentaciones no se sincronizan con los demás teléfonos.
 
 ### 4.3 Crear el usuario administrador
 
@@ -213,12 +233,13 @@ Si una foto no existe o falla, la app muestra un diseño con las iniciales del p
 
 ## 6. Cómo se envía el pedido
 
-1. El vendedor agrega productos al carrito.
-2. Pulsa **Continuar con el pedido**.
-3. Completa cliente, teléfono, dirección, fecha de entrega, pago y observaciones.
-4. Pulsa **Generar pedido y enviar por WhatsApp**.
-5. Se guarda una copia en el teléfono y se abre WhatsApp con el mensaje listo.
-6. El vendedor revisa y pulsa **Enviar** en WhatsApp.
+1. El vendedor abre un producto, elige la presentación (unidad, media docena, docena o caja) y la cantidad.
+2. Pulsa **Agregar al carrito**. Puede repetir el mismo producto en otra presentación; aparecerán como líneas separadas.
+3. Pulsa **Continuar con el pedido**.
+4. Completa cliente, teléfono, dirección, fecha de entrega, pago y observaciones.
+5. Pulsa **Generar pedido y enviar por WhatsApp**.
+6. Se guarda una copia en el teléfono y se abre WhatsApp con el mensaje listo.
+7. El vendedor revisa y pulsa **Enviar** en WhatsApp.
 
 El pedido se guarda con un número como `PED-20261111-001`. El contador es por teléfono; si usas varios vendedores, cada uno tendrá su propia numeración.
 
