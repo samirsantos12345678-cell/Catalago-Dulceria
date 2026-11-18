@@ -42,6 +42,7 @@
     secuencia: 'catalogo_secuencia_v1',
     productos: 'catalogo_productos_v1',
     nubeInicializada: 'catalogo_nube_inicializada_v1',
+    modoVendedor: 'catalogo_modo_vendedor_v1',
   };
 
   const el = {};
@@ -72,6 +73,7 @@
     },
     loginPendiente: null,
     guardandoProducto: false,
+    modoVendedor: false,
   };
 
   let toastTimer = null;
@@ -1251,6 +1253,11 @@
   function abrirLogin() {
     if (!usaNube || !el.loginModal) return;
 
+    if (state.modoVendedor) {
+      mostrarToast('Este teléfono está en modo vendedor');
+      return;
+    }
+
     if (el.loginError) {
       el.loginError.hidden = true;
       el.loginError.textContent = '';
@@ -1465,6 +1472,11 @@
   }
 
   function abrirFormularioProducto(id) {
+    if (state.modoVendedor) {
+      mostrarToast('Este teléfono está en modo vendedor');
+      return;
+    }
+
     if (usaNube && !nube.sesionActiva()) {
       state.loginPendiente = () => abrirFormularioProducto(id);
       abrirLogin();
@@ -2154,6 +2166,68 @@
     return (location.hash || '').replace(/^#\/?/, '').trim() || 'catalogo';
   }
 
+  /* ---------- Modo vendedor: teléfono sin acceso de administrador ---------- */
+
+  let modoVendedorNuevo = false;
+
+  function limpiarParametroVendedor() {
+    try {
+      const params = new URLSearchParams(location.search);
+      params.delete('vendedor');
+      const consulta = params.toString();
+      history.replaceState(
+        null,
+        '',
+        `${location.pathname}${consulta ? `?${consulta}` : ''}${location.hash}`
+      );
+    } catch (error) {
+      /* sin historial disponible */
+    }
+  }
+
+  function detectarModoVendedor() {
+    try {
+      const valor = new URLSearchParams(location.search).get('vendedor');
+
+      if (valor === '1' || valor === 'true') {
+        localStorage.setItem(CLAVES.modoVendedor, '1');
+        modoVendedorNuevo = true;
+        limpiarParametroVendedor();
+        return true;
+      }
+
+      if (valor === '0' || valor === 'false') {
+        localStorage.removeItem(CLAVES.modoVendedor);
+        limpiarParametroVendedor();
+        return false;
+      }
+
+      return localStorage.getItem(CLAVES.modoVendedor) === '1';
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function aplicarModoVendedor() {
+    if (!state.modoVendedor) return;
+
+    document.body.classList.add('modo-vendedor');
+
+    $$('[data-nav="productos"]').forEach((enlace) => {
+      enlace.hidden = true;
+    });
+
+    const botonProductos = $('#btn-productos-movil');
+    if (botonProductos) botonProductos.hidden = true;
+
+    if (usaNube && nube.sesionActiva()) {
+      nube.cerrarSesion();
+      state.nube.email = '';
+    }
+
+    if (typeof actualizarEstadoNube === 'function') actualizarEstadoNube();
+  }
+
   function navegar(vista) {
     const destino = ['catalogo', 'productos', 'checkout', 'pedidos', 'exito'].includes(vista)
       ? vista
@@ -2171,6 +2245,11 @@
     let destino = ['catalogo', 'productos', 'checkout', 'pedidos', 'exito'].includes(vista)
       ? vista
       : 'catalogo';
+
+    if (destino === 'productos' && state.modoVendedor) {
+      destino = 'catalogo';
+      if (location.hash !== '#/catalogo') history.replaceState(null, '', '#/catalogo');
+    }
 
     if (destino === 'checkout' && carritoDetallado().length === 0 && !opciones.forzar) {
       mostrarToast('Agrega productos al carrito para continuar');
@@ -2957,6 +3036,8 @@
     cacheElementos();
     cargarProductos();
 
+    state.modoVendedor = detectarModoVendedor();
+
     const carritoGuardado = leerJSON(CLAVES.carrito, []);
     const productosPorId = new Map(productosActivos.map((producto) => [producto.id, producto]));
     state.carrito = (Array.isArray(carritoGuardado) ? carritoGuardado : [])
@@ -2991,7 +3072,12 @@
     configurarInstalacion();
     registrarServiceWorker();
     iniciarNube();
+    aplicarModoVendedor();
     aplicarVista(parseHash());
+
+    if (modoVendedorNuevo) {
+      mostrarToast('Este teléfono quedó en modo vendedor');
+    }
   }
 
   if (document.readyState === 'loading') {
