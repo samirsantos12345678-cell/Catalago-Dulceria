@@ -5,7 +5,7 @@
 
 window.CONFIG = {
   // Nombre del negocio y frase que aparece en la cabecera.
-  nombreNegocio: 'Mi Negocio',
+  nombreNegocio: 'Dulceria Lobo',
   eslogan: 'Catálogo de ventas',
 
   // Número de WhatsApp que recibe los pedidos (bodega o encargado).
