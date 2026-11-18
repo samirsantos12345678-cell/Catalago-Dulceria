@@ -704,6 +704,10 @@
 
     el.cartBadge.hidden = cantidad === 0;
     el.cartBadge.textContent = cantidad;
+    if (el.tabCartBadge) {
+      el.tabCartBadge.hidden = cantidad === 0;
+      el.tabCartBadge.textContent = cantidad;
+    }
     el.cartCountLabel.textContent = cantidad ? `(${cantidad})` : '';
     el.cartTotal.textContent = formatearMoneda(total);
     el.btnCheckout.disabled = detalle.length === 0;
@@ -2268,8 +2272,10 @@
       seccion.hidden = seccion.dataset.view !== destino;
     });
 
+    const navActivo = destino === 'checkout' ? 'carrito' : destino;
+
     $$('.nav-link').forEach((enlace) => {
-      enlace.classList.toggle('is-active', enlace.dataset.nav === destino);
+      enlace.classList.toggle('is-active', enlace.dataset.nav === navActivo);
     });
 
     if (destino === 'checkout') {
@@ -2557,8 +2563,8 @@
     el.toast = $('#toast');
     el.printArea = $('#print-area');
     el.btnInstalar = $('#btn-instalar');
-    el.btnPedidosMovil = $('#btn-pedidos-movil');
-    el.btnProductosMovil = $('#btn-productos-movil');
+    el.tabCarrito = $('#tab-carrito');
+    el.tabCartBadge = $('#tab-cart-badge');
     el.adminBuscador = $('#admin-buscador');
     el.adminContador = $('#admin-contador');
     el.adminLista = $('#admin-lista');
@@ -2800,8 +2806,7 @@
       navegar('catalogo');
     });
 
-    el.btnPedidosMovil.addEventListener('click', () => navegar('pedidos'));
-    el.btnProductosMovil.addEventListener('click', () => navegar('productos'));
+    if (el.tabCarrito) el.tabCarrito.addEventListener('click', abrirCarrito);
 
     el.btnNuevoProducto.addEventListener('click', () => abrirFormularioProducto());
     el.btnRestaurarProductos.addEventListener('click', restaurarProductos);
