@@ -168,6 +168,18 @@ a {
   height: 22px;
 }
 
+.brand__mark--logo {
+  background: #fff;
+  overflow: hidden;
+}
+
+.brand__mark--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .brand__text {
   display: flex;
   flex-direction: column;
