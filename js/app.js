@@ -24,6 +24,13 @@
     mostrarCatalogoEjemplo: CONFIG.mostrarCatalogoEjemplo !== false,
   };
 
+  const PRESENTACIONES = [
+    { clave: 'unidad', nombre: 'Unidad', campo: 'precio_unidad' },
+    { clave: 'media-docena', nombre: 'Media docena', campo: 'precio_media_docena' },
+    { clave: 'docena', nombre: 'Docena', campo: 'precio_docena' },
+    { clave: 'caja', nombre: 'Caja', campo: 'precio_caja' },
+  ];
+
   const nube = window.Backend || null;
   const usaNube = Boolean(nube && nube.configurado);
 
@@ -52,6 +59,7 @@
     productoEditando: null,
     fotoTemporal: '',
     modalCantidad: 1,
+    modalPresentacion: 'unidad',
     pedidoExito: null,
     pedidoModal: null,
     vista: 'catalogo',
@@ -93,6 +101,65 @@
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
+  }
+
+  /* ---------- Presentaciones y precios ---------- */
+
+  function normalizarPresentacion(valor) {
+    const texto = normalizar(valor);
+    if (texto.includes('media')) return 'media-docena';
+    if (texto.includes('docena')) return 'docena';
+    if (texto.includes('caja')) return 'caja';
+    return 'unidad';
+  }
+
+  function presentacionInfo(clave) {
+    const normalizada = normalizarPresentacion(clave);
+    return PRESENTACIONES.find((presentacion) => presentacion.clave === normalizada) || PRESENTACIONES[0];
+  }
+
+  function nombrePresentacion(clave) {
+    return presentacionInfo(clave).nombre;
+  }
+
+  function normalizarPrecios(precios) {
+    const salida = {};
+    if (!precios || typeof precios !== 'object' || Array.isArray(precios)) return salida;
+
+    PRESENTACIONES.forEach(({ clave }) => {
+      const valor = Number(precios[clave]);
+      if (Number.isFinite(valor) && valor > 0) {
+        salida[clave] = Math.round(valor * 100) / 100;
+      }
+    });
+
+    return salida;
+  }
+
+  function presentacionesDisponibles(producto) {
+    if (!producto) return [];
+
+    return PRESENTACIONES.map(({ clave, nombre }) => ({
+      clave,
+      nombre,
+      precio: Number(producto.precios && producto.precios[clave]) || 0,
+    })).filter((presentacion) => presentacion.precio > 0);
+  }
+
+  function precioPresentacion(producto, clave) {
+    if (!producto) return 0;
+
+    const presentacion = normalizarPresentacion(clave);
+    const precios = producto.precios || {};
+    const precio = Number(precios[presentacion]) || 0;
+
+    if (precio > 0) return precio;
+    if (presentacion === normalizarPresentacion(producto.unidad)) return Number(producto.precio) || 0;
+    return 0;
+  }
+
+  function claveCarrito(id, presentacion) {
+    return `${id}|${normalizarPresentacion(presentacion)}`;
   }
 
   function icon(nombre, clase = '') {
@@ -286,12 +353,20 @@
 
   function normalizarProducto(producto) {
     const datos = producto || {};
+    const unidad = normalizarPresentacion(datos.unidad);
+    const precios = normalizarPrecios(datos.precios);
+    let precio = Math.max(0, Number(datos.precio) || 0);
+
+    if (!(precio > 0) && precios[unidad] > 0) precio = precios[unidad];
+    if (precio > 0) precios[unidad] = precio;
+
     return {
       id: String(datos.id || '').trim(),
       nombre: String(datos.nombre || '').trim(),
       categoria: String(datos.categoria || 'Sin categoría').trim() || 'Sin categoría',
-      precio: Math.max(0, Number(datos.precio) || 0),
-      unidad: String(datos.unidad || 'unidad').trim() || 'unidad',
+      precio,
+      unidad,
+      precios,
       imagen: String(datos.imagen || '').trim(),
       descripcion: String(datos.descripcion || '').trim(),
       destacado: Boolean(datos.destacado),
@@ -384,8 +459,22 @@
       .map((item) => {
         const producto = productoPorId(item.id);
         if (!producto) return null;
+
+        const presentacion = normalizarPresentacion(item.presentacion || producto.unidad);
+        const precio = precioPresentacion(producto, presentacion);
+        if (!(precio > 0)) return null;
+
         const cantidad = Math.max(1, Number(item.cantidad) || 1);
-        return { id: item.id, cantidad, producto, subtotal: producto.precio * cantidad };
+        return {
+          clave: claveCarrito(item.id, presentacion),
+          id: item.id,
+          presentacion,
+          presentacionNombre: nombrePresentacion(presentacion),
+          precio,
+          cantidad,
+          producto,
+          subtotal: precio * cantidad,
+        };
       })
       .filter(Boolean);
   }
@@ -406,29 +495,48 @@
     guardarJSON(CLAVES.pedidos, state.pedidos);
   }
 
-  function agregarAlCarrito(id, cantidad = 1) {
+  function agregarAlCarrito(id, cantidad = 1, presentacion = '') {
     const producto = productoPorId(id);
     if (!producto) return;
 
-    const existente = state.carrito.find((item) => item.id === id);
+    const clavePresentacion = normalizarPresentacion(presentacion || producto.unidad);
+    const precio = precioPresentacion(producto, clavePresentacion);
+
+    if (!(precio > 0)) {
+      mostrarToast(`No hay precio por ${nombrePresentacion(clavePresentacion).toLowerCase()}`);
+      return;
+    }
+
+    const existente = state.carrito.find((item) => {
+      const actual = normalizarPresentacion(item.presentacion || producto.unidad);
+      return item.id === id && actual === clavePresentacion;
+    });
+
     if (existente) {
       existente.cantidad = Math.min(999, (Number(existente.cantidad) || 0) + cantidad);
+      existente.presentacion = clavePresentacion;
     } else {
-      state.carrito.push({ id, cantidad: Math.min(999, Math.max(1, cantidad)) });
+      state.carrito.push({
+        id,
+        presentacion: clavePresentacion,
+        cantidad: Math.min(999, Math.max(1, cantidad)),
+      });
     }
 
     guardarCarrito();
     renderCarrito();
-    mostrarToast(`${producto.nombre} agregado al carrito`);
+    mostrarToast(`${producto.nombre} · ${nombrePresentacion(clavePresentacion)} agregado al carrito`);
   }
 
-  function cambiarCantidad(id, delta) {
-    const item = state.carrito.find((entrada) => entrada.id === id);
+  function cambiarCantidad(clave, delta) {
+    const item = state.carrito.find((entrada) => claveCarrito(entrada.id, entrada.presentacion) === clave);
     if (!item) return;
 
     item.cantidad = (Number(item.cantidad) || 0) + delta;
     if (item.cantidad <= 0) {
-      state.carrito = state.carrito.filter((entrada) => entrada.id !== id);
+      state.carrito = state.carrito.filter(
+        (entrada) => claveCarrito(entrada.id, entrada.presentacion) !== clave
+      );
     } else {
       item.cantidad = Math.min(999, item.cantidad);
     }
@@ -437,8 +545,10 @@
     renderCarrito();
   }
 
-  function eliminarDelCarrito(id) {
-    state.carrito = state.carrito.filter((item) => item.id !== id);
+  function eliminarDelCarrito(clave) {
+    state.carrito = state.carrito.filter(
+      (item) => claveCarrito(item.id, item.presentacion) !== clave
+    );
     guardarCarrito();
     renderCarrito();
     mostrarToast('Producto eliminado del carrito');
@@ -499,7 +609,9 @@
       if (!terminos.length) return true;
 
       const contenido = normalizar(
-        `${producto.nombre} ${producto.categoria} ${producto.descripcion || ''} ${producto.unidad || ''}`
+        `${producto.nombre} ${producto.categoria} ${producto.descripcion || ''} ${presentacionesDisponibles(producto)
+          .map((presentacion) => presentacion.nombre)
+          .join(' ')}`
       );
       return terminos.every((termino) => contenido.includes(termino));
     });
@@ -528,6 +640,9 @@
   function productoCardHTML(producto) {
     const imagen = imagenProducto(producto);
     const respaldo = placeholderDataUri(producto);
+    const presentaciones = presentacionesDisponibles(producto);
+    const etiquetaPresentacion = nombrePresentacion(producto.unidad);
+    const extra = presentaciones.length > 1 ? ` · ${presentaciones.length} presentaciones` : '';
 
     return `
       <article class="producto-card" data-id="${escapeHtml(producto.id)}" tabindex="0" role="button" aria-label="Ver detalle de ${escapeHtml(producto.nombre)}">
@@ -538,7 +653,7 @@
         <div class="producto-card__body">
           <span class="producto-card__cat">${escapeHtml(producto.categoria)}</span>
           <h3 class="producto-card__name">${escapeHtml(producto.nombre)}</h3>
-          <span class="producto-card__unit">${escapeHtml(producto.unidad || 'unidad')}</span>
+          <span class="producto-card__unit">${escapeHtml(etiquetaPresentacion)}${escapeHtml(extra)}</span>
           <div class="producto-card__foot">
             <span class="producto-card__price">${formatearMoneda(producto.precio)}</span>
             <button type="button" class="producto-card__add" data-add="${escapeHtml(producto.id)}" aria-label="Agregar ${escapeHtml(producto.nombre)} al carrito">
@@ -596,21 +711,21 @@
 
     el.cartItems.innerHTML = detalle
       .map(
-        ({ id, cantidad: unidades, producto, subtotal }) => `
-        <div class="cart-item" data-id="${escapeHtml(id)}">
+        ({ clave, cantidad: unidades, producto, precio, presentacionNombre, subtotal }) => `
+        <div class="cart-item" data-key="${escapeHtml(clave)}">
           <img src="${escapeHtml(imagenProducto(producto))}" alt="" loading="lazy" data-fallback="${escapeHtml(placeholderDataUri(producto))}">
           <div>
             <div class="cart-item__name">${escapeHtml(producto.nombre)}</div>
-            <div class="cart-item__price">${formatearMoneda(producto.precio)} · ${escapeHtml(producto.unidad || 'unidad')}</div>
+            <div class="cart-item__price">${escapeHtml(presentacionNombre)} · ${formatearMoneda(precio)}</div>
             <div class="cart-item__price">Subtotal: <strong>${formatearMoneda(subtotal)}</strong></div>
           </div>
           <div class="cart-item__side">
             <div class="qty">
-              <button type="button" data-cart-action="menos" data-id="${escapeHtml(id)}" aria-label="Quitar una unidad">${icon('minus')}</button>
+              <button type="button" data-cart-action="menos" data-cart-key="${escapeHtml(clave)}" aria-label="Quitar una unidad">${icon('minus')}</button>
               <span>${unidades}</span>
-              <button type="button" data-cart-action="mas" data-id="${escapeHtml(id)}" aria-label="Agregar una unidad">${icon('plus')}</button>
+              <button type="button" data-cart-action="mas" data-cart-key="${escapeHtml(clave)}" aria-label="Agregar una unidad">${icon('plus')}</button>
             </div>
-            <button type="button" class="cart-item__remove" data-cart-action="eliminar" data-id="${escapeHtml(id)}" aria-label="Eliminar ${escapeHtml(producto.nombre)}">${icon('trash')}</button>
+            <button type="button" class="cart-item__remove" data-cart-action="eliminar" data-cart-key="${escapeHtml(clave)}" aria-label="Eliminar ${escapeHtml(producto.nombre)}">${icon('trash')}</button>
           </div>
         </div>`
       )
@@ -646,11 +761,11 @@
 
     el.checkoutItems.innerHTML = detalle
       .map(
-        ({ producto, cantidad: unidades, subtotal }) => `
+        ({ producto, cantidad: unidades, precio, presentacionNombre, subtotal }) => `
         <div class="summary-item">
           <div>
             <div class="summary-item__name">${escapeHtml(producto.nombre)}</div>
-            <div class="summary-item__qty">${unidades} x ${formatearMoneda(producto.precio)}</div>
+            <div class="summary-item__qty">${unidades} x ${formatearMoneda(precio)} · ${escapeHtml(presentacionNombre)}</div>
           </div>
           <div class="summary-item__price">${formatearMoneda(subtotal)}</div>
         </div>`
@@ -859,13 +974,23 @@
   /* ---------- Administración de productos ---------- */
 
   function adminItemHTML(producto) {
+    const otras = presentacionesDisponibles(producto).filter(
+      (presentacion) => presentacion.clave !== normalizarPresentacion(producto.unidad)
+    );
+    const detallePrecios = otras.length
+      ? `<span class="admin-item__presentaciones">${otras
+          .map((presentacion) => `${escapeHtml(presentacion.nombre)}: ${formatearMoneda(presentacion.precio)}`)
+          .join(' · ')}</span>`
+      : '';
+
     return `
       <article class="admin-item" data-id="${escapeHtml(producto.id)}">
         <img src="${escapeHtml(imagenProducto(producto))}" alt="" loading="lazy" decoding="async" data-fallback="${escapeHtml(placeholderDataUri(producto))}">
         <div class="admin-item__info">
           <strong>${escapeHtml(producto.nombre)}</strong>
-          <span class="muted small">${escapeHtml(producto.categoria)} · ${escapeHtml(producto.unidad)}</span>
+          <span class="muted small">${escapeHtml(producto.categoria)} · ${escapeHtml(nombrePresentacion(producto.unidad))}</span>
           <span class="admin-item__price">${formatearMoneda(producto.precio)}</span>
+          ${detallePrecios}
         </div>
         <div class="admin-item__actions">
           <button type="button" class="icon-btn" data-admin-editar="${escapeHtml(producto.id)}" title="Editar" aria-label="Editar ${escapeHtml(producto.nombre)}">
@@ -884,7 +1009,10 @@
     const texto = normalizar(state.admin.texto);
     const lista = productosActivos.filter((producto) => {
       if (!texto) return true;
-      return normalizar(`${producto.nombre} ${producto.categoria} ${producto.unidad}`).includes(texto);
+      const contenido = `${producto.nombre} ${producto.categoria} ${presentacionesDisponibles(producto)
+        .map((presentacion) => presentacion.nombre)
+        .join(' ')}`;
+      return normalizar(contenido).includes(texto);
     });
 
     el.adminLista.innerHTML = lista.map(adminItemHTML).join('');
@@ -1287,6 +1415,7 @@
       if (campo && 'value' in campo) campo.value = valor;
     });
 
+    actualizarCamposPrecios();
     state.fotoTemporal = borrador.foto || '';
     actualizarPreviewFoto();
   }
@@ -1319,6 +1448,22 @@
     el.btnQuitarFoto.hidden = !state.fotoTemporal;
   }
 
+  function actualizarCamposPrecios() {
+    if (!el.formProducto) return;
+
+    const unidad = normalizarPresentacion(el.formProducto.elements.namedItem('unidad').value);
+
+    $$('[data-precio]', el.formProducto).forEach((campo) => {
+      const esPrincipal = campo.dataset.precio === unidad;
+      const input = campo.querySelector('input');
+      const marca = campo.querySelector('[data-req]');
+
+      campo.classList.toggle('is-principal', esPrincipal);
+      if (input) input.required = esPrincipal;
+      if (marca) marca.hidden = !esPrincipal;
+    });
+  }
+
   function abrirFormularioProducto(id) {
     if (usaNube && !nube.sesionActiva()) {
       state.loginPendiente = () => abrirFormularioProducto(id);
@@ -1336,13 +1481,21 @@
     el.formProducto.elements.namedItem('nombre').value = producto ? producto.nombre : '';
     el.formProducto.elements.namedItem('categoria').value = producto ? producto.categoria : '';
     el.formProducto.elements.namedItem('unidad').value = producto ? producto.unidad : 'unidad';
-    el.formProducto.elements.namedItem('precio').value = producto ? producto.precio : '';
+
+    PRESENTACIONES.forEach(({ clave, campo }) => {
+      const input = el.formProducto.elements.namedItem(campo);
+      if (!input) return;
+      const valor = producto && producto.precios ? Number(producto.precios[clave]) || 0 : 0;
+      input.value = valor > 0 ? valor : '';
+    });
+
     el.formProducto.elements.namedItem('descripcion').value = producto ? producto.descripcion : '';
     el.formProducto.elements.namedItem('destacado').value = producto && producto.destacado ? '1' : '';
     el.productoImagen.value = '';
     el.productFormTitle.textContent = producto ? 'Editar producto' : 'Nuevo producto';
 
     llenarCategoriasDatalist();
+    actualizarCamposPrecios();
     actualizarPreviewFoto();
     abrirModal(el.productFormModal);
   }
@@ -1405,7 +1558,17 @@
 
     const nombre = String(datos.nombre || '').trim();
     const categoria = String(datos.categoria || '').trim();
-    const precio = Number(String(datos.precio || '').replace(',', '.'));
+    const unidad = normalizarPresentacion(datos.unidad);
+    const precios = {};
+
+    PRESENTACIONES.forEach(({ clave, campo }) => {
+      const valor = Number(String(datos[campo] || '').replace(',', '.'));
+      if (Number.isFinite(valor) && valor > 0) {
+        precios[clave] = Math.round(valor * 100) / 100;
+      }
+    });
+
+    const precio = precios[unidad] || 0;
 
     if (!nombre || !categoria) {
       mostrarToast('Escribe el nombre y la categoría');
@@ -1413,7 +1576,7 @@
     }
 
     if (!(precio > 0)) {
-      mostrarToast('Escribe un precio mayor a cero');
+      mostrarToast(`Escribe el precio por ${nombrePresentacion(unidad).toLowerCase()}`);
       return;
     }
 
@@ -1431,7 +1594,8 @@
       nombre,
       categoria,
       precio,
-      unidad: datos.unidad || 'unidad',
+      unidad,
+      precios,
       descripcion: datos.descripcion || '',
       imagen: state.fotoTemporal || '',
       destacado: datos.destacado === '1',
@@ -1478,7 +1642,14 @@
     renderProductos();
     renderAdmin();
     renderCarrito();
-    mostrarToast(existente ? 'Producto actualizado' : 'Producto creado');
+
+    if (usaNube && nube.preciosNoSoportados) {
+      mostrarToast(
+        'Producto guardado. Falta agregar la columna "precios" en Supabase para que las presentaciones se sincronicen.'
+      );
+    } else {
+      mostrarToast(existente ? 'Producto actualizado' : 'Producto creado');
+    }
   }
 
   async function eliminarProducto(id) {
@@ -1734,12 +1905,13 @@
   }
 
   function crearPedido(datos, detalle) {
-    const items = detalle.map(({ producto, cantidad, subtotal }) => ({
+    const items = detalle.map(({ producto, cantidad, subtotal, precio, presentacion, presentacionNombre }) => ({
       id: producto.id,
       nombre: producto.nombre,
       categoria: producto.categoria,
-      precio: producto.precio,
-      unidad: producto.unidad || 'unidad',
+      precio,
+      presentacion,
+      unidad: presentacionNombre,
       cantidad,
       subtotal,
     }));
@@ -2296,6 +2468,8 @@
     el.modalDesc = $('#modal-desc');
     el.modalPrecio = $('#modal-precio');
     el.modalUnidad = $('#modal-unidad');
+    el.modalPresentacion = $('#modal-presentacion');
+    el.modalPresentacionCampo = $('#modal-presentacion-campo');
     el.modalQty = $('#modal-qty');
     el.btnModalAdd = $('#btn-modal-add');
     el.orderModal = $('#order-modal');
@@ -2343,12 +2517,31 @@
     el.modalQty.textContent = state.modalCantidad;
   }
 
+  function actualizarPrecioModal() {
+    const producto = state.productoModal;
+    if (!producto) return;
+
+    const presentacion = normalizarPresentacion(state.modalPresentacion);
+    const precio = precioPresentacion(producto, presentacion);
+
+    el.modalPrecio.textContent = formatearMoneda(precio);
+    el.modalUnidad.textContent = `por ${nombrePresentacion(presentacion).toLowerCase()}`;
+  }
+
   function abrirProducto(id) {
     const producto = productoPorId(id);
     if (!producto) return;
 
+    const presentaciones = presentacionesDisponibles(producto);
+    const porDefecto = presentaciones.some((presentacion) => presentacion.clave === producto.unidad)
+      ? producto.unidad
+      : presentaciones[0]
+        ? presentaciones[0].clave
+        : producto.unidad;
+
     state.productoModal = producto;
     state.modalCantidad = 1;
+    state.modalPresentacion = porDefecto;
 
     el.modalImg.src = imagenProducto(producto);
     el.modalImg.alt = producto.nombre;
@@ -2356,11 +2549,24 @@
     el.modalCategoria.textContent = producto.categoria;
     el.modalTitle.textContent = producto.nombre;
     el.modalDesc.textContent = descripcionProducto(producto);
-    el.modalPrecio.textContent = formatearMoneda(producto.precio);
-    el.modalUnidad.textContent = `por ${producto.unidad || 'unidad'}`;
+
+    el.modalPresentacion.innerHTML = presentaciones
+      .map(
+        (presentacion) =>
+          `<option value="${escapeHtml(presentacion.clave)}">${escapeHtml(presentacion.nombre)} · ${formatearMoneda(
+            presentacion.precio
+          )}</option>`
+      )
+      .join('');
+    el.modalPresentacion.value = porDefecto;
+    if (el.modalPresentacionCampo) {
+      el.modalPresentacionCampo.hidden = presentaciones.length < 2;
+    }
+
     el.modalQty.textContent = '1';
     el.btnModalAdd.dataset.id = producto.id;
 
+    actualizarPrecioModal();
     abrirModal(el.productModal);
   }
 
@@ -2431,11 +2637,11 @@
       if (!boton) return;
 
       const accion = boton.dataset.cartAction;
-      const id = boton.dataset.id;
+      const clave = boton.dataset.cartKey;
 
-      if (accion === 'mas') cambiarCantidad(id, 1);
-      if (accion === 'menos') cambiarCantidad(id, -1);
-      if (accion === 'eliminar') eliminarDelCarrito(id);
+      if (accion === 'mas') cambiarCantidad(clave, 1);
+      if (accion === 'menos') cambiarCantidad(clave, -1);
+      if (accion === 'eliminar') eliminarDelCarrito(clave);
     });
 
     el.btnCarrito.addEventListener('click', abrirCarrito);
@@ -2446,8 +2652,13 @@
 
     el.btnModalAdd.addEventListener('click', () => {
       if (!state.productoModal) return;
-      agregarAlCarrito(state.productoModal.id, state.modalCantidad);
+      agregarAlCarrito(state.productoModal.id, state.modalCantidad, state.modalPresentacion);
       cerrarModal();
+    });
+
+    el.modalPresentacion.addEventListener('change', () => {
+      state.modalPresentacion = el.modalPresentacion.value;
+      actualizarPrecioModal();
     });
 
     el.formPedido.addEventListener('submit', manejarSubmitPedido);
@@ -2550,6 +2761,10 @@
       if (evento.target.name === 'nombre' || evento.target.name === 'categoria') {
         actualizarPreviewFoto();
       }
+    });
+
+    el.formProducto.addEventListener('change', (evento) => {
+      if (evento.target.name === 'unidad') actualizarCamposPrecios();
     });
 
     el.productoImagen.addEventListener('change', async () => {
@@ -2743,13 +2958,19 @@
     cargarProductos();
 
     const carritoGuardado = leerJSON(CLAVES.carrito, []);
-    const idsValidos = new Set(productosActivos.map((producto) => producto.id));
+    const productosPorId = new Map(productosActivos.map((producto) => [producto.id, producto]));
     state.carrito = (Array.isArray(carritoGuardado) ? carritoGuardado : [])
-      .filter((item) => item && item.id && Number(item.cantidad) > 0 && idsValidos.has(item.id))
-      .map((item) => ({
-        id: item.id,
-        cantidad: Math.min(999, Math.max(1, Number(item.cantidad) || 1)),
-      }));
+      .filter((item) => item && item.id && Number(item.cantidad) > 0 && productosPorId.has(item.id))
+      .map((item) => {
+        const producto = productosPorId.get(item.id);
+        const presentacion = normalizarPresentacion(item.presentacion || producto.unidad);
+        return {
+          id: item.id,
+          presentacion,
+          cantidad: Math.min(999, Math.max(1, Number(item.cantidad) || 1)),
+        };
+      })
+      .filter((item) => precioPresentacion(productosPorId.get(item.id), item.presentacion) > 0);
 
     const pedidosGuardados = leerJSON(CLAVES.pedidos, []);
     state.pedidos = (Array.isArray(pedidosGuardados) ? pedidosGuardados : []).filter(
