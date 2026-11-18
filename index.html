@@ -72,12 +72,6 @@
         <button id="btn-instalar" class="icon-btn install-btn" hidden title="Instalar app" aria-label="Instalar app">
           <svg class="icon"><use href="#i-install"/></svg>
         </button>
-        <button id="btn-pedidos-movil" class="icon-btn only-mobile" title="Pedidos guardados" aria-label="Pedidos guardados">
-          <svg class="icon"><use href="#i-history"/></svg>
-        </button>
-        <button id="btn-productos-movil" class="icon-btn only-mobile" title="Administrar productos" aria-label="Administrar productos">
-          <svg class="icon"><use href="#i-box"/></svg>
-        </button>
         <button id="btn-carrito" class="icon-btn cart-btn" title="Abrir carrito" aria-label="Abrir carrito">
           <svg class="icon"><use href="#i-cart"/></svg>
           <span id="cart-badge" class="badge" hidden>0</span>
@@ -561,6 +555,29 @@
       </div>
     </form>
   </div>
+
+  <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
+  <nav id="tabbar" class="tabbar" aria-label="Navegación principal">
+    <a href="#/catalogo" class="tabbar__item nav-link" data-nav="catalogo">
+      <svg class="icon"><use href="#i-store"/></svg>
+      <span>Catálogo</span>
+    </a>
+    <a href="#/pedidos" class="tabbar__item nav-link" data-nav="pedidos">
+      <svg class="icon"><use href="#i-receipt"/></svg>
+      <span>Pedidos</span>
+    </a>
+    <button type="button" id="tab-carrito" class="tabbar__item nav-link" data-nav="carrito" aria-label="Abrir carrito">
+      <span class="tabbar__icon">
+        <svg class="icon"><use href="#i-cart"/></svg>
+        <span id="tab-cart-badge" class="tabbar__badge" hidden>0</span>
+      </span>
+      <span>Carrito</span>
+    </button>
+    <a href="#/productos" class="tabbar__item nav-link" data-nav="productos">
+      <svg class="icon"><use href="#i-box"/></svg>
+      <span>Productos</span>
+    </a>
+  </nav>
 
   <!-- BARRA MÓVIL DEL CARRITO -->
   <div id="mobile-cart-bar" class="mobile-cart-bar" hidden>
