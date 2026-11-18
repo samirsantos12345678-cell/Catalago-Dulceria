@@ -9,6 +9,7 @@ create table if not exists public.productos (
   categoria text not null default 'Sin categoría',
   precio numeric(12, 2) not null default 0,
   unidad text not null default 'unidad',
+  precios jsonb not null default '{}'::jsonb,
   imagen text not null default '',
   descripcion text not null default '',
   destacado boolean not null default false,
@@ -19,6 +20,10 @@ create table if not exists public.productos (
 
 create index if not exists productos_categoria_idx
   on public.productos (categoria);
+
+-- Si ya tenías la tabla creada antes, esta línea agrega la columna nueva.
+alter table public.productos
+  add column if not exists precios jsonb not null default '{}'::jsonb;
 
 -- Seguridad a nivel de fila (RLS)
 alter table public.productos enable row level security;
