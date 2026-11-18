@@ -57,7 +57,7 @@
       <a class="brand" href="#/catalogo" aria-label="Ir al catálogo">
         <span class="brand__mark"><svg class="icon"><use href="#i-store"/></svg></span>
         <span class="brand__text">
-          <strong id="brand-nombre">Dulceria Lobo</strong>
+          <strong id="brand-nombre">Mi Negocio</strong>
           <small id="brand-eslogan">Catálogo de ventas</small>
         </span>
       </a>
@@ -396,6 +396,10 @@
       <span id="modal-categoria" class="chip chip--static"></span>
       <h2 id="modal-title"></h2>
       <p id="modal-desc" class="muted"></p>
+      <label class="field modal__presentacion" id="modal-presentacion-campo">
+        <span>Presentación</span>
+        <select id="modal-presentacion"></select>
+      </label>
       <div class="modal__price">
         <strong id="modal-precio"></strong>
         <span id="modal-unidad"></span>
@@ -459,13 +463,36 @@
           <input name="categoria" type="text" list="lista-categorias" required maxlength="40" autocomplete="off" placeholder="Ej. Chocolates">
         </label>
         <label class="field">
-          <span>Unidad</span>
-          <input name="unidad" type="text" maxlength="20" autocomplete="off" placeholder="unidad">
+          <span>Se vende por <span class="req">*</span></span>
+          <select name="unidad" required>
+            <option value="unidad">Unidad</option>
+            <option value="media-docena">Media docena</option>
+            <option value="docena">Docena</option>
+            <option value="caja">Caja</option>
+          </select>
         </label>
-        <label class="field">
-          <span>Precio <span class="req">*</span></span>
-          <input name="precio" type="number" inputmode="decimal" min="0" step="0.01" required placeholder="0.00">
-        </label>
+        <div class="field full precios-presentacion">
+          <span>Precios por presentación</span>
+          <div class="precios-presentacion__grid">
+            <label class="field" data-precio="unidad">
+              <span>Unidad <span class="req" data-req hidden>*</span></span>
+              <input name="precio_unidad" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+            </label>
+            <label class="field" data-precio="media-docena">
+              <span>Media docena <span class="req" data-req hidden>*</span></span>
+              <input name="precio_media_docena" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+            </label>
+            <label class="field" data-precio="docena">
+              <span>Docena <span class="req" data-req hidden>*</span></span>
+              <input name="precio_docena" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+            </label>
+            <label class="field" data-precio="caja">
+              <span>Caja <span class="req" data-req hidden>*</span></span>
+              <input name="precio_caja" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+            </label>
+          </div>
+          <p class="muted small">El precio de la presentación elegida arriba es obligatorio. Las demás son opcionales: déjalas vacías si no vendes por esa presentación.</p>
+        </div>
         <label class="field">
           <span>Destacado</span>
           <select name="destacado">
