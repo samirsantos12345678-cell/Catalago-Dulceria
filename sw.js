@@ -4,7 +4,7 @@
    de CACHE_VERSION (por ejemplo: catalogo-v2).
    ============================================================ */
 
-const CACHE_VERSION = 'catalogo-v18';
+const CACHE_VERSION = 'catalogo-v19';
 
 const APP_SHELL = [
   './',
