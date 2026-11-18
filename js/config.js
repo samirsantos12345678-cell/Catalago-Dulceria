@@ -5,13 +5,13 @@
 
 window.CONFIG = {
   // Nombre del negocio y frase que aparece en la cabecera.
-  nombreNegocio: 'Dulceria Lobo',
+  nombreNegocio: 'Mi Negocio',
   eslogan: 'Catálogo de ventas',
 
   // Número de WhatsApp que recibe los pedidos (bodega o encargado).
   // Formato: código de país + número, SIN +, SIN espacios y SIN guiones.
   // Ejemplo para Perú: '51987654321'. Para México: '5215512345678'.
-  numeroWhatsApp: '504 89270568',
+  numeroWhatsApp: '51999999999',
 
   // 'numero'  -> abre WhatsApp directo al número de arriba.
   // 'compartir' -> abre el menú de compartir para elegir contacto o grupo.
@@ -23,7 +23,7 @@ window.CONFIG = {
   locale: 'es-HN',
 
   // Vendedor que aparece por defecto en el formulario.
-  vendedorPorDefecto: 'Olvin',
+  vendedorPorDefecto: '',
 
   // Prefijo del número de pedido. Ejemplo: PED-20261111-001
   prefijoPedido: 'PED',
