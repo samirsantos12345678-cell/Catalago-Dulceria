@@ -2136,3 +2136,104 @@ input:invalid:not(:placeholder-shown) {
     height: 40px;
   }
 }
+
+/* ---------- Navegación inferior (móvil) ---------- */
+
+.tabbar {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .tabbar {
+    display: flex;
+    align-items: stretch;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 45;
+    background: var(--surface);
+    border-top: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+
+  .tabbar__item {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 7px 2px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .tabbar__item .icon {
+    width: 23px;
+    height: 23px;
+  }
+
+  .tabbar__item:hover {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .tabbar__item.is-active {
+    background: var(--brand-light);
+    color: var(--brand-dark);
+  }
+
+  .tabbar__item.is-active .icon {
+    stroke-width: 2.2;
+  }
+
+  .tabbar__icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .tabbar__badge {
+    position: absolute;
+    top: -6px;
+    right: -12px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #3b2600;
+    font-size: 0.66rem;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--surface);
+  }
+
+  main.container {
+    padding-bottom: 96px;
+  }
+
+  .mobile-cart-bar {
+    bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  body.has-cart-bar main {
+    padding-bottom: 176px;
+  }
+
+  body.has-cart-bar .toast {
+    bottom: calc(164px + env(safe-area-inset-bottom));
+  }
+}
