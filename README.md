@@ -314,7 +314,7 @@ También funciona con GitHub Pages, Vercel o Cloudflare Pages.
 
 La app necesita HTTPS para instalarse y funcionar sin conexión. Netlify, GitHub Pages y Vercel lo dan gratis.
 
-Los iconos actuales (`icons/icon-192.png` y `icons/icon-512.png`) son genéricos. Para usar el logo del negocio, reemplázalos por dos PNG cuadrados de 192 x 192 px y 512 x 512 px con el mismo nombre.
+Los iconos de la app (`icons/icon-192.png` y `icons/icon-512.png`) se generaron a partir de `img/logo-dulceria.png`. Si cambias el logo, reemplaza esa imagen y vuelve a crear los dos PNG cuadrados de 192 x 192 px y 512 x 512 px.
 
 ---
 
