@@ -196,6 +196,25 @@ Desde ese momento:
 - Supabase pausa los proyectos gratis después de varios días sin uso. Si la app deja de sincronizar, entra al panel de Supabase y reactívalo.
 - Sin nube, la app sigue funcionando como antes, solo en cada teléfono.
 
+### 4.7 Dejar un teléfono solo como vendedor
+
+Para que un teléfono nunca tenga acceso de administrador, ábrelo **una sola vez** con este enlace (agrega `?vendedor=1` al final):
+
+```text
+https://TU-SITIO/?vendedor=1
+```
+
+Qué hace:
+
+- Marca ese teléfono como vendedor de forma permanente en ese navegador.
+- Oculta la pestaña **Productos** y el botón de administrar productos.
+- Cierra automáticamente cualquier sesión de administrador que estuviera abierta.
+- La dirección vuelve a quedar limpia; el teléfono sigue en modo vendedor.
+
+Para revertirlo (por ejemplo, si ese teléfono vuelve a ser del administrador), abre el mismo enlace con `?vendedor=0`.
+
+> Si se borran los datos del navegador, el teléfono vuelve al modo normal, pero sin sesión iniciada: para ser administrador igual hay que escribir el correo y la contraseña. Los vendedores nunca las necesitan.
+
 ---
 
 ## 5. Fotos de productos
