@@ -1,0 +1,19 @@
+FOTOS DE PRODUCTOS
+
+1. Guarda aquí las fotos con nombres cortos y sin espacios.
+   Ejemplo: chocolate-barra.jpg, gomitas-ositos.webp
+
+2. En js/productos.js cambia:
+   imagen: ''
+
+   por:
+   imagen: 'img/productos/chocolate-barra.jpg'
+
+3. Recomendaciones:
+   - Formato WebP o JPG.
+   - Tamaño ideal: 800 x 800 px.
+   - Peso ideal: entre 80 y 200 KB por foto.
+   - Usa fotos cuadradas y con fondo limpio.
+
+Si una foto no existe o falla, la app muestra un diseño con las
+iniciales del producto. No se rompe el catálogo.

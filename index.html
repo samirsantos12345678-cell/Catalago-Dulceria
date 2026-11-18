@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Catálogo">
+  <meta name="description" content="Catálogo de productos y pedidos por WhatsApp para vendedores.">
+  <title>Catálogo de ventas</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <!-- Iconos reutilizables -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="svg-sprite" aria-hidden="true">
+    <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9.5 4.5 4h15L21 9.5"/><path d="M4 9.5V20h16V9.5"/><path d="M9 20v-6h6v6"/><path d="M3 9.5h18"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="m13.5 5.5 3 3"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7A8.4 8.4 0 0 1 4 11.5a8.5 8.5 0 0 1 8.5-8.5h.5a8.5 8.5 0 0 1 8 8z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/><path d="M18 12h.01"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5"/><path d="M12 12v9"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a13 13 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20z"/><path d="M12 9v5"/><circle cx="12" cy="18" r=".6" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-install" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 7v7"/><path d="m9 11 3 3 3-3"/><path d="M10 19h4"/></symbol>
+    <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></symbol>
+    <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M2 2l20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 12.5a10 10 0 0 1 3-2"/><path d="M14 10.5a10 10 0 0 1 5 2"/><path d="M2 8.5a15 15 0 0 1 4-2.5"/><path d="M18 6a15 15 0 0 1 4 2.5"/><circle cx="12" cy="20" r=".6" fill="currentColor" stroke="none"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" href="#/catalogo" aria-label="Ir al catálogo">
+        <span class="brand__mark"><svg class="icon"><use href="#i-store"/></svg></span>
+        <span class="brand__text">
+          <strong id="brand-nombre">Mi Negocio</strong>
+          <small id="brand-eslogan">Catálogo de ventas</small>
+        </span>
+      </a>
+
+      <nav class="topbar__nav" aria-label="Navegación principal">
+        <a href="#/catalogo" class="nav-link" data-nav="catalogo">Catálogo</a>
+        <a href="#/productos" class="nav-link" data-nav="productos">Productos</a>
+        <a href="#/pedidos" class="nav-link" data-nav="pedidos">Pedidos</a>
+      </nav>
+
+      <div class="topbar__actions">
+        <button id="btn-instalar" class="icon-btn install-btn" hidden title="Instalar app" aria-label="Instalar app">
+          <svg class="icon"><use href="#i-install"/></svg>
+        </button>
+        <button id="btn-pedidos-movil" class="icon-btn only-mobile" title="Pedidos guardados" aria-label="Pedidos guardados">
+          <svg class="icon"><use href="#i-history"/></svg>
+        </button>
+        <button id="btn-productos-movil" class="icon-btn only-mobile" title="Administrar productos" aria-label="Administrar productos">
+          <svg class="icon"><use href="#i-box"/></svg>
+        </button>
+        <button id="btn-carrito" class="icon-btn cart-btn" title="Abrir carrito" aria-label="Abrir carrito">
+          <svg class="icon"><use href="#i-cart"/></svg>
+          <span id="cart-badge" class="badge" hidden>0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenido" class="container">
+    <!-- VISTA CATÁLOGO -->
+    <section id="view-catalogo" class="view" data-view="catalogo">
+      <div class="catalogo-head">
+        <div>
+          <p class="eyebrow">Catálogo</p>
+          <h1>Encuentra lo que necesitas</h1>
+          <p class="muted">Toca un producto para ver el detalle y agrégalo al pedido.</p>
+        </div>
+        <div class="catalogo-stats" aria-label="Resumen del catálogo">
+          <span><strong id="stat-productos">0</strong> productos</span>
+          <span><strong id="stat-categorias">0</strong> categorías</span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input id="buscador" type="search" placeholder="Buscar producto, categoría..." autocomplete="off" aria-label="Buscar productos">
+          <button id="btn-limpiar-busqueda" class="search__clear" hidden aria-label="Limpiar búsqueda">
+            <svg class="icon"><use href="#i-close"/></svg>
+          </button>
+        </div>
+        <div class="toolbar__row">
+          <div id="categorias" class="chips" role="group" aria-label="Filtrar por categoría"></div>
+          <label class="sort">
+            <span>Ordenar</span>
+            <select id="orden" aria-label="Ordenar productos">
+              <option value="destacados">Destacados</option>
+              <option value="nombre">Nombre A-Z</option>
+              <option value="precio-asc">Menor precio</option>
+              <option value="precio-desc">Mayor precio</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="resultados-info">
+        <p id="resultados-texto" aria-live="polite"></p>
+        <button id="btn-limpiar-filtros" class="link-btn" hidden>Limpiar filtros</button>
+      </div>
+
+      <div id="productos" class="productos-grid"></div>
+
+      <div id="sin-productos" class="empty-state" hidden>
+        <div class="empty-icon"><svg class="icon"><use href="#i-box"/></svg></div>
+        <h3>Todavía no hay productos</h3>
+        <p class="muted">Entra a <strong>Productos</strong> y crea el primero para empezar a vender.</p>
+        <a class="btn btn-primary" href="#/productos">Crear primer producto</a>
+      </div>
+
+      <div id="sin-resultados" class="empty-state" hidden>
+        <div class="empty-icon"><svg class="icon"><use href="#i-search"/></svg></div>
+        <h3>No encontramos productos</h3>
+        <p class="muted">Prueba con otra palabra o cambia de categoría.</p>
+        <button class="btn btn-secondary" data-action="limpiar-filtros">Ver todo el catálogo</button>
+      </div>
+
+      <div class="load-more-wrap">
+        <button id="btn-mas" class="btn btn-secondary" hidden>Mostrar más productos</button>
+      </div>
+    </section>
+
+    <!-- VISTA CHECKOUT -->
+    <section id="view-checkout" class="view" data-view="checkout" hidden>
+      <div class="page-head">
+        <button class="btn btn-ghost" data-action="volver-catalogo">
+          <svg class="icon"><use href="#i-arrow-left"/></svg> Catálogo
+        </button>
+        <div>
+          <p class="eyebrow">Paso final</p>
+          <h1>Datos del pedido</h1>
+          <p class="muted">Completa los datos del cliente y genera el mensaje para WhatsApp.</p>
+        </div>
+      </div>
+
+      <div class="checkout-layout">
+        <form id="form-pedido" class="card form-card" novalidate>
+          <h2>Datos del cliente</h2>
+          <div class="form-grid">
+            <label class="field full">
+              <span>Nombre del cliente <span class="req">*</span></span>
+              <input name="clienteNombre" type="text" required autocomplete="name" placeholder="Ej. María López">
+            </label>
+            <label class="field">
+              <span>Teléfono <span class="req">*</span></span>
+              <input name="clienteTelefono" type="tel" required inputmode="tel" autocomplete="tel" placeholder="Ej. 999 999 999">
+            </label>
+            <label class="field">
+              <span>Fecha de entrega <span class="req">*</span></span>
+              <input name="fechaEntrega" type="date" required>
+            </label>
+            <label class="field full">
+              <span>Dirección o referencia <span class="req">*</span></span>
+              <input name="clienteDireccion" type="text" required autocomplete="street-address" placeholder="Calle, número, distrito y referencia">
+            </label>
+            <label class="field">
+              <span>Forma de pago <span class="req">*</span></span>
+              <select name="formaPago" required>
+                <option value="">Seleccionar...</option>
+                <option>Efectivo</option>
+                <option>Transferencia</option>
+                <option>Contra entrega</option>
+                <option>Tarjeta</option>
+                <option>Otro</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Vendedor</span>
+              <input name="vendedor" type="text" autocomplete="name" placeholder="Nombre del vendedor">
+            </label>
+            <label class="field full">
+              <span>Observaciones</span>
+              <textarea name="notas" placeholder="Horario de entrega, indicaciones, referencia..."></textarea>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-whatsapp btn-block">
+              <svg class="icon"><use href="#i-chat"/></svg>
+              Generar pedido y enviar por WhatsApp
+            </button>
+          </div>
+          <p class="form-hint">Al generar el pedido se guarda una copia en este teléfono y se abre WhatsApp con el mensaje listo. Revisa el pedido y pulsa enviar.</p>
+          <div id="aviso-config" class="notice" hidden></div>
+        </form>
+
+        <aside class="card summary-card" aria-label="Resumen del pedido">
+          <h2>Resumen del pedido</h2>
+          <p id="checkout-count" class="muted small"></p>
+          <div id="checkout-items"></div>
+          <div class="summary-total">
+            <span>Total</span>
+            <strong id="checkout-total">L 0.00</strong>
+          </div>
+          <p class="muted small">Precios sujetos a disponibilidad de stock.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- VISTA PEDIDOS -->
+    <section id="view-pedidos" class="view" data-view="pedidos" hidden>
+      <div class="page-head page-head--split">
+        <div>
+          <p class="eyebrow">Historial</p>
+          <h1>Pedidos guardados</h1>
+          <p class="muted">Los pedidos se guardan en este teléfono. Exporta un respaldo de vez en cuando.</p>
+        </div>
+        <div class="page-actions">
+          <button id="btn-exportar-json" class="btn btn-secondary">
+            <svg class="icon"><use href="#i-download"/></svg> Respaldo
+          </button>
+          <button id="btn-exportar-csv" class="btn btn-ghost">
+            <svg class="icon"><use href="#i-download"/></svg> CSV
+          </button>
+          <button id="btn-borrar-historial" class="btn btn-danger">
+            <svg class="icon"><use href="#i-trash"/></svg> Borrar historial
+          </button>
+        </div>
+      </div>
+
+      <div id="pedidos-lista" class="pedidos-lista"></div>
+
+      <div id="pedidos-vacio" class="empty-state" hidden>
+        <div class="empty-icon"><svg class="icon"><use href="#i-receipt"/></svg></div>
+        <h3>Todavía no hay pedidos</h3>
+        <p class="muted">Cuando generes un pedido aparecerá aquí.</p>
+        <button class="btn btn-primary" data-action="volver-catalogo">Ir al catálogo</button>
+      </div>
+    </section>
+
+    <!-- VISTA MIS PRODUCTOS -->
+    <section id="view-productos" class="view" data-view="productos" hidden>
+      <div class="page-head page-head--split">
+        <div>
+          <p class="eyebrow">Administrar</p>
+          <h1>Mis productos</h1>
+          <p class="muted">Crea, edita o elimina productos. Con la nube activa, los cambios aparecen en todos los teléfonos de los vendedores.</p>
+        </div>
+        <div class="page-actions">
+          <button id="btn-nuevo-producto" class="btn btn-primary">
+            <svg class="icon"><use href="#i-plus"/></svg> Nuevo producto
+          </button>
+        </div>
+      </div>
+
+      <div id="admin-nube" class="admin-nube" hidden>
+        <div class="admin-nube__estado">
+          <span id="admin-nube-dot" class="admin-nube__dot" aria-hidden="true"></span>
+          <div>
+            <strong id="admin-nube-titulo">Solo este teléfono</strong>
+            <span id="admin-nube-texto" class="muted small">Los cambios no se comparten con otros dispositivos.</span>
+          </div>
+        </div>
+        <div class="admin-nube__acciones">
+          <button id="btn-sincronizar-productos" class="btn btn-secondary admin-nube__btn" type="button">
+            <svg class="icon"><use href="#i-refresh"/></svg> Sincronizar
+          </button>
+          <button id="btn-sesion-nube" class="btn btn-primary admin-nube__btn" type="button">Entrar</button>
+        </div>
+      </div>
+
+      <div class="admin-toolbar">
+        <div class="search">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input id="admin-buscador" type="search" placeholder="Buscar en mis productos..." autocomplete="off" aria-label="Buscar en mis productos">
+        </div>
+        <span id="admin-contador" class="muted small" aria-live="polite"></span>
+      </div>
+
+      <div id="admin-lista" class="admin-lista"></div>
+
+      <div id="admin-vacio" class="empty-state" hidden>
+        <div class="empty-icon"><svg class="icon"><use href="#i-box"/></svg></div>
+        <h3 id="admin-vacio-titulo">No hay productos</h3>
+        <p id="admin-vacio-texto" class="muted">Crea tu primer producto para empezar.</p>
+        <button class="btn btn-primary" data-action="nuevo-producto">Nuevo producto</button>
+      </div>
+
+      <div class="admin-pie">
+        <div class="admin-pie__acciones">
+          <button id="btn-exportar-productos" class="link-btn">Exportar productos</button>
+          <label class="link-btn btn-file" for="archivo-productos">Importar productos</label>
+          <input id="archivo-productos" type="file" accept=".json,application/json" hidden>
+          <button id="btn-subir-nube" class="link-btn" hidden>Subir catálogo a la nube</button>
+          <button id="btn-restaurar-productos" class="link-btn danger">Restaurar catálogo de ejemplo</button>
+        </div>
+        <p class="muted small"><span id="admin-pie-texto">Los productos se guardan en este teléfono. Exporta un respaldo para pasarlos a otro dispositivo.</span> <span id="admin-almacenamiento"></span></p>
+      </div>
+    </section>
+
+    <!-- VISTA ÉXITO -->
+    <section id="view-exito" class="view" data-view="exito" hidden>
+      <div class="card exito-card">
+        <div class="exito-icon"><svg class="icon"><use href="#i-check-circle"/></svg></div>
+        <p class="eyebrow">Pedido guardado</p>
+        <h1>¡Pedido generado!</h1>
+        <p id="exito-texto" class="muted"></p>
+        <div id="exito-resumen" class="exito-resumen"></div>
+        <div class="exito-actions">
+          <button id="btn-reenviar-exito" class="btn btn-whatsapp">
+            <svg class="icon"><use href="#i-chat"/></svg> Enviar de nuevo
+          </button>
+          <button id="btn-compartir-exito" class="btn btn-secondary">
+            <svg class="icon"><use href="#i-share"/></svg> Compartir
+          </button>
+          <button id="btn-copiar-exito" class="btn btn-secondary">
+            <svg class="icon"><use href="#i-copy"/></svg> Copiar
+          </button>
+          <button id="btn-descargar-exito" class="btn btn-secondary">
+            <svg class="icon"><use href="#i-download"/></svg> Descargar .txt
+          </button>
+          <button id="btn-pdf-exito" class="btn btn-secondary">
+            <svg class="icon"><use href="#i-print"/></svg> Guardar PDF
+          </button>
+          <button id="btn-nuevo-pedido" class="btn btn-primary">
+            <svg class="icon"><use href="#i-plus"/></svg> Nuevo pedido
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <p><strong id="footer-nombre"></strong> · Catálogo web con pedidos por WhatsApp</p>
+    <p class="muted small">Los precios pueden cambiar sin previo aviso. Revisa el stock antes de confirmar.</p>
+  </footer>
+
+  <!-- CARRITO -->
+  <div id="cart-overlay" class="overlay" hidden></div>
+  <aside id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title" aria-hidden="true" hidden>
+    <header class="cart-drawer__head">
+      <h2 id="cart-title">Carrito <span id="cart-count-label" class="muted small"></span></h2>
+      <button class="icon-btn" data-action="cerrar-carrito" aria-label="Cerrar carrito">
+        <svg class="icon"><use href="#i-close"/></svg>
+      </button>
+    </header>
+    <div id="cart-items" class="cart-items"></div>
+    <div id="cart-empty" class="empty-state empty-state--compact" hidden>
+      <div class="empty-icon"><svg class="icon"><use href="#i-cart"/></svg></div>
+      <h3>Tu carrito está vacío</h3>
+      <p class="muted">Agrega productos desde el catálogo.</p>
+      <button class="btn btn-primary" data-action="cerrar-carrito">Ver productos</button>
+    </div>
+    <footer class="cart-drawer__foot">
+      <div class="summary-total">
+        <span>Total</span>
+        <strong id="cart-total">L 0.00</strong>
+      </div>
+      <button id="btn-checkout" class="btn btn-primary btn-block" disabled>
+        Continuar con el pedido
+        <svg class="icon icon--flip"><use href="#i-arrow-left"/></svg>
+      </button>
+      <button id="btn-vaciar-carrito" class="link-btn danger" hidden>Vaciar carrito</button>
+    </footer>
+  </aside>
+
+  <!-- MODAL PRODUCTO -->
+  <div id="modal-overlay" class="overlay" hidden></div>
+  <div id="product-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <button class="modal__close icon-btn" data-action="cerrar-modal" aria-label="Cerrar detalle">
+      <svg class="icon"><use href="#i-close"/></svg>
+    </button>
+    <div class="modal__media">
+      <img id="modal-img" alt="" loading="lazy">
+    </div>
+    <div class="modal__body">
+      <span id="modal-categoria" class="chip chip--static"></span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-desc" class="muted"></p>
+      <div class="modal__price">
+        <strong id="modal-precio"></strong>
+        <span id="modal-unidad"></span>
+      </div>
+      <div class="modal__buy">
+        <div class="qty">
+          <button type="button" data-action="modal-menos" aria-label="Quitar una unidad"><svg class="icon"><use href="#i-minus"/></svg></button>
+          <span id="modal-qty">1</span>
+          <button type="button" data-action="modal-mas" aria-label="Agregar una unidad"><svg class="icon"><use href="#i-plus"/></svg></button>
+        </div>
+        <button id="btn-modal-add" class="btn btn-primary">
+          <svg class="icon"><use href="#i-cart"/></svg> Agregar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PEDIDO -->
+  <div id="order-modal" class="modal modal--order" role="dialog" aria-modal="true" aria-labelledby="order-modal-title" hidden>
+    <button class="modal__close icon-btn" data-action="cerrar-modal" aria-label="Cerrar pedido">
+      <svg class="icon"><use href="#i-close"/></svg>
+    </button>
+    <div class="modal__body">
+      <p class="eyebrow">Pedido guardado</p>
+      <h2 id="order-modal-title">Pedido</h2>
+      <div id="order-modal-body"></div>
+      <div class="form-actions">
+        <button class="btn btn-whatsapp" data-action="order-enviar">
+          <svg class="icon"><use href="#i-chat"/></svg> Reenviar
+        </button>
+        <button class="btn btn-secondary" data-action="order-copiar">
+          <svg class="icon"><use href="#i-copy"/></svg> Copiar
+        </button>
+        <button class="btn btn-secondary" data-action="order-descargar">
+          <svg class="icon"><use href="#i-download"/></svg> .txt
+        </button>
+        <button class="btn btn-secondary" data-action="order-pdf">
+          <svg class="icon"><use href="#i-print"/></svg> PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORMULARIO DE PRODUCTO -->
+  <div id="product-form-modal" class="modal modal--form" role="dialog" aria-modal="true" aria-labelledby="product-form-title" hidden>
+    <button class="modal__close icon-btn" data-action="cerrar-modal" aria-label="Cerrar formulario">
+      <svg class="icon"><use href="#i-close"/></svg>
+    </button>
+    <form id="form-producto" class="modal__body" novalidate>
+      <p class="eyebrow">Producto</p>
+      <h2 id="product-form-title">Nuevo producto</h2>
+      <input type="hidden" name="id">
+
+      <div class="form-grid">
+        <label class="field full">
+          <span>Nombre del producto <span class="req">*</span></span>
+          <input name="nombre" type="text" required maxlength="80" autocomplete="off" placeholder="Ej. Chocolate con leche 90 g">
+        </label>
+        <label class="field">
+          <span>Categoría <span class="req">*</span></span>
+          <input name="categoria" type="text" list="lista-categorias" required maxlength="40" autocomplete="off" placeholder="Ej. Chocolates">
+        </label>
+        <label class="field">
+          <span>Unidad</span>
+          <input name="unidad" type="text" maxlength="20" autocomplete="off" placeholder="unidad">
+        </label>
+        <label class="field">
+          <span>Precio <span class="req">*</span></span>
+          <input name="precio" type="number" inputmode="decimal" min="0" step="0.01" required placeholder="0.00">
+        </label>
+        <label class="field">
+          <span>Destacado</span>
+          <select name="destacado">
+            <option value="">No</option>
+            <option value="1">Sí, mostrar primero</option>
+          </select>
+        </label>
+        <label class="field full">
+          <span>Descripción</span>
+          <textarea name="descripcion" maxlength="240" placeholder="Detalles, sabor, presentación..."></textarea>
+        </label>
+        <div class="field full">
+          <span>Foto</span>
+          <div class="foto-campo">
+            <img id="producto-preview" alt="Vista previa de la foto" src="">
+            <div class="foto-campo__acciones">
+              <label class="btn btn-secondary btn-file">
+                <svg class="icon"><use href="#i-camera"/></svg> Tomar o elegir foto
+                <input id="producto-imagen" type="file" accept="image/*" hidden>
+              </label>
+              <button type="button" id="btn-quitar-foto" class="link-btn danger" hidden>Quitar foto</button>
+              <p class="muted small">La foto se reduce automáticamente. Ideal: cuadrada y con fondo claro.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <datalist id="lista-categorias"></datalist>
+
+      <div class="form-actions">
+        <button id="btn-guardar-producto" type="submit" class="btn btn-primary">
+          <svg class="icon"><use href="#i-check"/></svg> Guardar producto
+        </button>
+        <button type="button" class="btn btn-secondary" data-action="cerrar-modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- MODAL DE ACCESO DEL ADMINISTRADOR -->
+  <div id="login-modal" class="modal modal--login" role="dialog" aria-modal="true" aria-labelledby="login-title" hidden>
+    <button class="modal__close icon-btn" data-action="cerrar-modal" aria-label="Cerrar acceso">
+      <svg class="icon"><use href="#i-close"/></svg>
+    </button>
+    <form id="form-login" class="modal__body" novalidate>
+      <p class="eyebrow">Administrador</p>
+      <h2 id="login-title">Entrar a la nube</h2>
+      <p class="muted">Inicia sesión para crear y editar los productos que verán todos los vendedores.</p>
+
+      <label class="field">
+        <span>Correo <span class="req">*</span></span>
+        <input name="email" type="email" required autocomplete="username" placeholder="admin@negocio.com">
+      </label>
+
+      <label class="field">
+        <span>Contraseña <span class="req">*</span></span>
+        <input name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña">
+      </label>
+
+      <p id="login-error" class="notice notice--error" hidden></p>
+
+      <div class="form-actions">
+        <button id="btn-login" type="submit" class="btn btn-primary">
+          <svg class="icon"><use href="#i-check"/></svg> Entrar
+        </button>
+        <button type="button" class="btn btn-secondary" data-action="cerrar-modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- BARRA MÓVIL DEL CARRITO -->
+  <div id="mobile-cart-bar" class="mobile-cart-bar" hidden>
+    <div>
+      <span id="mobile-cart-count">0 productos</span>
+      <strong id="mobile-cart-total">L 0.00</strong>
+    </div>
+    <button class="btn btn-primary" data-action="abrir-carrito">Ver carrito</button>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- HOJA DE IMPRESIÓN / PDF -->
+  <section id="print-area" class="print-area" aria-hidden="true"></section>
+
+  <script src="js/config.js" defer></script>
+  <script src="js/productos.js" defer></script>
+  <script src="js/backend.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
