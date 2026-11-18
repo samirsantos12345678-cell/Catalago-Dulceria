@@ -19,9 +19,11 @@ window.Backend = (() => {
   const tabla = String(CONFIG.tablaProductos || 'productos').trim() || 'productos';
   const CLAVE_SESION = 'catalogo_sesion_v1';
   const configurado = Boolean(urlBase && claveAnon);
+  const PRESENTACIONES = ['unidad', 'media-docena', 'docena', 'caja'];
 
   let sesion = leerSesion();
   let refrescando = null;
+  let preciosSoportados = true;
 
   function leerSesion() {
     try {
@@ -267,6 +269,25 @@ window.Backend = (() => {
     }
   }
 
+  function normalizarPrecios(precios) {
+    const salida = {};
+    if (!precios || typeof precios !== 'object' || Array.isArray(precios)) return salida;
+
+    PRESENTACIONES.forEach((clave) => {
+      const valor = Number(precios[clave]);
+      if (Number.isFinite(valor) && valor > 0) {
+        salida[clave] = Math.round(valor * 100) / 100;
+      }
+    });
+
+    return salida;
+  }
+
+  function esErrorColumnaPrecios(error) {
+    if (!error || (error.status !== 400 && error.status !== 404)) return false;
+    return String(error.message || '').toLowerCase().includes('precios');
+  }
+
   function mapearProducto(producto) {
     return {
       id: String(producto.id || ''),
@@ -274,6 +295,7 @@ window.Backend = (() => {
       categoria: String(producto.categoria || 'Sin categoría'),
       precio: Number(producto.precio) || 0,
       unidad: String(producto.unidad || 'unidad'),
+      precios: normalizarPrecios(producto.precios),
       imagen: String(producto.imagen || ''),
       descripcion: String(producto.descripcion || ''),
       destacado: Boolean(producto.destacado),
@@ -281,6 +303,16 @@ window.Backend = (() => {
       orden: Number(producto.orden) || 0,
       actualizado_en: new Date().toISOString(),
     };
+  }
+
+  async function enviarProducto(cuerpo) {
+    const datos = await peticion(`/rest/v1/${tabla}?on_conflict=id`, {
+      metodo: 'POST',
+      cuerpo,
+      prefer: 'resolution=merge-duplicates,return=representation',
+      requiereSesion: true,
+    });
+    return Array.isArray(datos) ? datos[0] : datos;
   }
 
   async function listarProductos() {
@@ -291,13 +323,19 @@ window.Backend = (() => {
   }
 
   async function guardarProducto(producto) {
-    const datos = await peticion(`/rest/v1/${tabla}?on_conflict=id`, {
-      metodo: 'POST',
-      cuerpo: mapearProducto(producto),
-      prefer: 'resolution=merge-duplicates,return=representation',
-      requiereSesion: true,
-    });
-    return Array.isArray(datos) ? datos[0] : datos;
+    const cuerpo = mapearProducto(producto);
+    if (!preciosSoportados) delete cuerpo.precios;
+
+    try {
+      return await enviarProducto(cuerpo);
+    } catch (error) {
+      if (preciosSoportados && esErrorColumnaPrecios(error)) {
+        preciosSoportados = false;
+        delete cuerpo.precios;
+        return enviarProducto(cuerpo);
+      }
+      throw error;
+    }
   }
 
   async function eliminarProducto(id) {
@@ -306,6 +344,30 @@ window.Backend = (() => {
       prefer: 'return=minimal',
       requiereSesion: true,
     });
+  }
+
+  async function enviarLoteProductos(lote) {
+    const cuerpo = lote.map((producto) => {
+      const copia = { ...producto };
+      if (!preciosSoportados) delete copia.precios;
+      return copia;
+    });
+
+    const opciones = {
+      metodo: 'POST',
+      cuerpo,
+      prefer: 'resolution=merge-duplicates,return=minimal',
+      requiereSesion: true,
+    };
+
+    try {
+      await peticion(`/rest/v1/${tabla}?on_conflict=id`, opciones);
+    } catch (error) {
+      if (!preciosSoportados || !esErrorColumnaPrecios(error)) throw error;
+      preciosSoportados = false;
+      cuerpo.forEach((producto) => delete producto.precios);
+      await peticion(`/rest/v1/${tabla}?on_conflict=id`, opciones);
+    }
   }
 
   async function reemplazarProductos(lista) {
@@ -319,13 +381,7 @@ window.Backend = (() => {
       .map((producto) => String(producto.id));
 
     for (let i = 0; i < productos.length; i += 20) {
-      const lote = productos.slice(i, i + 20);
-      await peticion(`/rest/v1/${tabla}?on_conflict=id`, {
-        metodo: 'POST',
-        cuerpo: lote,
-        prefer: 'resolution=merge-duplicates,return=minimal',
-        requiereSesion: true,
-      });
+      await enviarLoteProductos(productos.slice(i, i + 20));
     }
 
     for (let i = 0; i < sobran.length; i += 50) {
@@ -353,5 +409,8 @@ window.Backend = (() => {
     guardarProducto,
     eliminarProducto,
     reemplazarProductos,
+    get preciosNoSoportados() {
+      return !preciosSoportados;
+    },
   };
 })();
