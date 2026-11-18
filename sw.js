@@ -4,7 +4,7 @@
    de CACHE_VERSION (por ejemplo: catalogo-v2).
    ============================================================ */
 
-const CACHE_VERSION = 'catalogo-v17';
+const CACHE_VERSION = 'catalogo-v18';
 
 const APP_SHELL = [
   './',
@@ -18,6 +18,7 @@ const APP_SHELL = [
   './icons/favicon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './img/logo-dulceria.png',
 ];
 
 self.addEventListener('install', (evento) => {
