@@ -2229,6 +2229,10 @@ input:invalid:not(:placeholder-shown) {
     bottom: calc(80px + env(safe-area-inset-bottom));
   }
 
+  .toast {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
   body.has-cart-bar main {
     padding-bottom: 176px;
   }
