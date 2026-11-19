@@ -59,9 +59,11 @@ window.CONFIG = {
 
 Puedes hacerlo de dos formas: desde la app o editando el archivo.
 
+En el teléfono, la barra de abajo tiene **Catálogo**, **Pedidos**, **Carrito** y **Productos**. La sección donde estás se resalta en verde.
+
 ### Desde la app (recomendado para el día a día)
 
-1. Abre la pestaña **Productos** (en el teléfono es el icono de caja).
+1. Abre la pestaña **Productos** (en el teléfono es la pestaña de abajo con el icono de caja).
 2. Pulsa **Nuevo producto**.
 3. Completa nombre y categoría. En **Se vende por** elige la presentación principal (unidad, media docena, docena o caja) y escribe su precio.
 4. Si también vendes el producto en otras presentaciones, escribe sus precios en la misma sección. Las que dejes vacías no aparecen en el catálogo.
