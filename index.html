@@ -257,7 +257,8 @@
         <div>
           <p class="eyebrow">Administrar</p>
           <h1>Mis productos</h1>
-          <p class="muted">Crea, edita o elimina productos. Con la nube activa, los cambios aparecen en todos los teléfonos de los vendedores.</p>
+          <p class="muted" id="admin-descripcion">Crea, edita o elimina productos. Con la nube activa, los cambios aparecen en todos los teléfonos de los vendedores.</p>
+          <p class="muted" id="admin-descripcion-invitado" hidden>Entra como administrador para crear o editar productos.</p>
         </div>
         <div class="page-actions">
           <button id="btn-nuevo-producto" class="btn btn-primary">
@@ -282,32 +283,34 @@
         </div>
       </div>
 
-      <div class="admin-toolbar">
-        <div class="search">
-          <svg class="icon"><use href="#i-search"/></svg>
-          <input id="admin-buscador" type="search" placeholder="Buscar en mis productos..." autocomplete="off" aria-label="Buscar en mis productos">
+      <div id="admin-contenido">
+        <div class="admin-toolbar">
+          <div class="search">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input id="admin-buscador" type="search" placeholder="Buscar en mis productos..." autocomplete="off" aria-label="Buscar en mis productos">
+          </div>
+          <span id="admin-contador" class="muted small" aria-live="polite"></span>
         </div>
-        <span id="admin-contador" class="muted small" aria-live="polite"></span>
-      </div>
 
-      <div id="admin-lista" class="admin-lista"></div>
+        <div id="admin-lista" class="admin-lista"></div>
 
-      <div id="admin-vacio" class="empty-state" hidden>
-        <div class="empty-icon"><svg class="icon"><use href="#i-box"/></svg></div>
-        <h3 id="admin-vacio-titulo">No hay productos</h3>
-        <p id="admin-vacio-texto" class="muted">Crea tu primer producto para empezar.</p>
-        <button class="btn btn-primary" data-action="nuevo-producto">Nuevo producto</button>
-      </div>
-
-      <div class="admin-pie">
-        <div class="admin-pie__acciones">
-          <button id="btn-exportar-productos" class="link-btn">Exportar productos</button>
-          <label class="link-btn btn-file" for="archivo-productos">Importar productos</label>
-          <input id="archivo-productos" type="file" accept=".json,application/json" hidden>
-          <button id="btn-subir-nube" class="link-btn" hidden>Subir catálogo a la nube</button>
-          <button id="btn-restaurar-productos" class="link-btn danger">Restaurar catálogo de ejemplo</button>
+        <div id="admin-vacio" class="empty-state" hidden>
+          <div class="empty-icon"><svg class="icon"><use href="#i-box"/></svg></div>
+          <h3 id="admin-vacio-titulo">No hay productos</h3>
+          <p id="admin-vacio-texto" class="muted">Crea tu primer producto para empezar.</p>
+          <button class="btn btn-primary" data-action="nuevo-producto">Nuevo producto</button>
         </div>
-        <p class="muted small"><span id="admin-pie-texto">Los productos se guardan en este teléfono. Exporta un respaldo para pasarlos a otro dispositivo.</span> <span id="admin-almacenamiento"></span></p>
+
+        <div class="admin-pie">
+          <div class="admin-pie__acciones">
+            <button id="btn-exportar-productos" class="link-btn">Exportar productos</button>
+            <label class="link-btn btn-file" for="archivo-productos">Importar productos</label>
+            <input id="archivo-productos" type="file" accept=".json,application/json" hidden>
+            <button id="btn-subir-nube" class="link-btn" hidden>Subir catálogo a la nube</button>
+            <button id="btn-restaurar-productos" class="link-btn danger">Restaurar catálogo de ejemplo</button>
+          </div>
+          <p class="muted small"><span id="admin-pie-texto">Los productos se guardan en este teléfono. Exporta un respaldo para pasarlos a otro dispositivo.</span> <span id="admin-almacenamiento"></span></p>
+        </div>
       </div>
     </section>
 
