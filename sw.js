@@ -4,7 +4,7 @@
    de CACHE_VERSION (por ejemplo: catalogo-v2).
    ============================================================ */
 
-const CACHE_VERSION = 'catalogo-v21';
+const CACHE_VERSION = 'catalogo-v22';
 
 const APP_SHELL = [
   './',
@@ -25,7 +25,8 @@ self.addEventListener('install', (evento) => {
   evento.waitUntil(
     caches
       .open(CACHE_VERSION)
-      .then((cache) => cache.addAll(APP_SHELL))
+      // cache: 'reload' evita guardar copias viejas del caché del navegador
+      .then((cache) => cache.addAll(APP_SHELL.map((url) => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
