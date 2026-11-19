@@ -1059,6 +1059,15 @@
     if (!el.adminNube) return;
 
     el.adminNube.hidden = false;
+
+    // Las herramientas de administración solo se muestran con sesión iniciada
+    // (o cuando no hay nube, porque entonces no existe el concepto de sesión).
+    const esAdmin = !usaNube || Boolean(state.nube.email);
+    if (el.adminContenido) el.adminContenido.hidden = !esAdmin;
+    if (el.adminDescripcion) el.adminDescripcion.hidden = !esAdmin;
+    if (el.adminDescripcionInvitado) el.adminDescripcionInvitado.hidden = esAdmin;
+    if (el.btnNuevoProducto) el.btnNuevoProducto.hidden = !esAdmin;
+
     if (el.btnSubirNube) el.btnSubirNube.hidden = !usaNube || !state.nube.email;
 
     const titulo = el.adminNubeTitulo;
@@ -2567,6 +2576,9 @@
     el.tabCartBadge = $('#tab-cart-badge');
     el.adminBuscador = $('#admin-buscador');
     el.adminContador = $('#admin-contador');
+    el.adminContenido = $('#admin-contenido');
+    el.adminDescripcion = $('#admin-descripcion');
+    el.adminDescripcionInvitado = $('#admin-descripcion-invitado');
     el.adminLista = $('#admin-lista');
     el.adminVacio = $('#admin-vacio');
     el.adminVacioTitulo = $('#admin-vacio-titulo');
