@@ -59,7 +59,9 @@ window.CONFIG = {
 
 Puedes hacerlo de dos formas: desde la app o editando el archivo.
 
-En el teléfono, la barra de abajo tiene **Catálogo**, **Pedidos**, **Carrito** y **Productos**. La sección donde estás se resalta en verde.
+En el teléfono, la barra de abajo tiene **Catálogo**, **Productos**, **Pedidos** y **Carrito**. La sección donde estás se resalta en verde.
+
+Si aún no has entrado como administrador, la pestaña **Productos** solo muestra el botón **Entrar**. Las herramientas de crear, editar, exportar e importar aparecen después de iniciar sesión.
 
 ### Desde la app (recomendado para el día a día)
 
